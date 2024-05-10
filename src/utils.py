@@ -1,7 +1,8 @@
-# утановить bs4
+from typing import Any
 import requests
+import psycopg2
 
-def get_hhru_data(employer_ids):
+def get_hhru_data(employer_ids: list[str]) -> list[dict[str, Any]]:
     """Получение данных о работодателях и вакансиях с помощью API HH.ru."""
 
     data = []
@@ -24,15 +25,85 @@ def get_hhru_data(employer_ids):
 
 def create_database(database_name, params):
     """Создание базы данных"""
+    conn = psycopg2.connect(dbname='postgres', **params)
+    conn.autocommit = True #автоматическое построчное сохранение
+    cur = conn.cursor()
 
+    try:
+        cur.execute(f"DROP DATABASE {database_name}")    #удаляем бд если она есть
+    except BaseException:
+        pass
+    cur.execute(f"CREATE DATABASE {database_name}")    #создаем бд
 
+    cur.close()#
+    conn.close()
 
+    conn = psycopg2.connect(dbname=database_name, **params)
 
+    with conn.cursor() as cur:
+        cur.execute("""
+                CREATE TABLE employers (
+                    employer_id SERIAL PRIMARY KEY,
+                    name text,
+                    url text
+                )
+            """)
+
+    with conn.cursor() as cur:
+        cur.execute("""
+                CREATE TABLE vacancyes (
+                    vacancy_id SERIAL PRIMARY KEY,
+                    employer_id int REFERENCES employers(employer_id),
+                    name text,
+                    salary int,
+                    url text
+                )
+            """)
+
+    conn.commit()
+    conn.close()
 
 
 def save_data_to_database(data, database_name, params):
     """сохранение данных в бвзе данных"""
 
+    conn = psycopg2.connect(dbname=database_name, **params)
+
+    with conn.cursor() as cur:
+        for i in data:
+            employer = i['employers']
+            cur.execute(
+                """
+                INSERT INTO employers (name, url)
+                VALUES (%s, %s)
+                RETURNING employer_id
+                """,
+                (employer['name'], employer['alternate_url'])
+            )
+            employer_id = cur.fetchone()[0]
+            vacancies_data = i['vacancies']
+
+
+            for vacanci in vacancies_data:
+                if 'salary' in vacanci and vacanci['salary'] != None:
+                    if 'to' in vacanci['salary'] and isinstance(vacanci['salary']['to'], int):
+                        salary = vacanci['salary']['to']
+                    elif 'from' in vacanci['salary'] and isinstance(vacanci['salary']['from'], int):
+                        salary = vacanci['salary']['from']
+                    else:
+                        salary = 0
+                else:
+                    salary = 0
+                cur.execute(
+                    """
+                    INSERT INTO vacancyes (employer_id, name, salary, url)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (employer_id, vacanci['name'], salary, vacanci['url'])
+                )
+
+    conn.commit()
+    conn.close()
 
 
 
@@ -41,21 +112,4 @@ def save_data_to_database(data, database_name, params):
 
 
 
-employer_ids = ['3127', '3776']    #мегафон мтс
 
-
-print(get_hhru_data(employer_ids))
-
-
-# employer_ids = [
-#     '1753496',  # ООО Бизапс
-#     '1795330',  # Ateuco
-#     '2751250',  # AdminDivision
-#     '1975782',  # ООО 101
-#     '669853',  # BeFresh
-#     '2450307',  # ООО АльянсТелекоммуникейшнс
-#     '10170495',  # ООО 20 тонн
-#     '3446179',  # Gembo
-#     '5536919',  # Come&Pass
-#     '193400',  # АВТОВАЗ
-#     ]
