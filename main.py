@@ -1,7 +1,7 @@
 import os
 from src.utils import get_hhru_data, create_database, save_data_to_database
 from src.config import config
-
+from src.DBManager import DBManager
 
 def main():
     employer_ids = [
@@ -24,10 +24,11 @@ def main():
     params = config()
     create_database('hhry', params)    #Создание базы данных
 
-    save_data_to_database(data, 'hhry', params)
+    save_data_to_database(data, 'hhry', params)    #добавляет данные в бд
 
 
-
+    bd = DBManager(params)
+    bd.get_companies_and_vacancies_count()
 
 
 
