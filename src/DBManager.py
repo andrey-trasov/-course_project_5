@@ -24,15 +24,15 @@ class DBManager:
 
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий у каждой компании"""
-        self.cur.execute(f"SELECT employers.name, COUNT(*) FROM employers"
-                         f"INNER JOIN vacancyes USING (employer_id)"
+        self.cur.execute(f"SELECT employers.name, COUNT(*) FROM employers "
+                         f"INNER JOIN vacancyes USING (employer_id) "
                          f"GROUP BY employers.name")
         for i in self.cur.fetchall():
             print(i)
 
     def get_all_vacancies(self):
         """получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию"""
-        self.cur.execute(f"SELECT employers.name, vacancyes.name, salary, vacancyes.url FROM employers"
+        self.cur.execute(f"SELECT employers.name, vacancyes.name, salary, vacancyes.url FROM employers "
                          f"INNER JOIN vacancyes USING (employer_id)")
         for i in self.cur.fetchall():
             print(i)
@@ -44,14 +44,14 @@ class DBManager:
 
     def get_vacancies_with_higher_salary(self):
         """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
-        self.cur.execute(f"SELECT name, salary, url FROM vacancyes"
+        self.cur.execute(f"SELECT name, salary, url FROM vacancyes "
                          f"WHERE salary > (select avg(salary) from vacancyes)")
         for i in self.cur.fetchall():
             print(i)
 
     def get_vacancies_with_keyword(self, keyword):
         """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
-        self.cur.execute(f"SELECT name, salary, url FROM vacancyes"
+        self.cur.execute(f"SELECT name, salary, url FROM vacancyes "
                          f"WHERE name LIKE '%{keyword}%'")
         for i in self.cur.fetchall():
             print(i)

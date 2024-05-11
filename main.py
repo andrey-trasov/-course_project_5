@@ -19,7 +19,7 @@ def main():
 
     data = get_hhru_data(employer_ids)    #получает список с данными вакансий
 
-    print(data) #убрать
+    # print(data) #убрать
 
     params = config()
     create_database('hhry', params)    #Создание базы данных

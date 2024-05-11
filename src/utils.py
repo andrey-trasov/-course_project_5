@@ -11,6 +11,7 @@ def get_hhru_data(employer_ids: list[str]) -> list[dict[str, Any]]:
         employer_data = response_employer.json()
 
         vacancy_data = []
+
         response_vacancy = requests.get('https://api.hh.ru/vacancies?employer_id=' + employer_id)
         response_text_vac = response_vacancy.json()
 
