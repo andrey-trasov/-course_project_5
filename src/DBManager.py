@@ -8,20 +8,6 @@ class DBManager:
         self.conn = psycopg2.connect(dbname='hhry', **params)
         self.cur = self.conn.cursor()
 
-    # def get_companies_and_vacancies_count(self):
-    #     """получает список всех компаний и количество вакансий у каждой компании"""
-    #     conn = psycopg2.connect(dbname=database_name, **params)
-    #     with conn.cursor() as cur:
-    #         cur.execute("""
-    #         SELECT employers.name FROM employers
-    #         INNER JOIN vacancyes USING (employer_id);
-    #         """)
-    #         for i in cur.fetchall():
-    #             print(i)
-    #
-    #     cur.close()
-    #     conn.close()
-
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий у каждой компании"""
         self.cur.execute(f"SELECT employers.name, COUNT(*) FROM employers "
@@ -40,7 +26,7 @@ class DBManager:
     def get_avg_salary(self):
         """получает среднюю зарплату по вакансиям"""
         self.cur.execute(f"SELECT AVG(salary) FROM vacancyes")
-        print(int(self.cur.fetchall()))
+        print(int(self.cur.fetchall()[0][0]))
 
     def get_vacancies_with_higher_salary(self):
         """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
@@ -53,8 +39,13 @@ class DBManager:
         """получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
         self.cur.execute(f"SELECT name, salary, url FROM vacancyes "
                          f"WHERE name LIKE '%{keyword}%'")
-        for i in self.cur.fetchall():
-            print(i)
+        lists = self.cur.fetchall()
+        if lists == []:
+            print("По такому кллючевому слову вакансий не найдено")
+            print()
+        else:
+            for i in lists:
+                print(i)
 
 
 
