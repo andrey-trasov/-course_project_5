@@ -12,10 +12,17 @@ def get_hhru_data(employer_ids: list[str]) -> list[dict[str, Any]]:
 
         vacancy_data = []
 
-        response_vacancy = requests.get('https://api.hh.ru/vacancies?employer_id=' + employer_id)
-        response_text_vac = response_vacancy.json()
+        url = 'https://api.hh.ru/vacancies?employer_id=' + str(employer_id)
+        headers = {'User-Agent': 'HH-User-Agent'}
+        params = {'page': 0, 'per_page': 100}
 
-        vacancy_data.extend(response_text_vac['items'])
+        while params['page'] != 20:
+            response = requests.get(url, headers=headers, params=params)
+            vacancies = response.json()['items']
+            if not vacancies != []:
+                break
+            params['page'] += 1
+            vacancy_data.extend(vacancies)
 
         data.append({
             'employers': employer_data,
@@ -105,12 +112,3 @@ def save_data_to_database(data, database_name, params):
 
     conn.commit()
     conn.close()
-
-
-
-
-
-
-
-
-
