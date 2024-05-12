@@ -46,14 +46,3 @@ class DBManager:
         else:
             for i in lists:
                 print(i)
-
-
-
-
-
-
-
-
-
-
-
